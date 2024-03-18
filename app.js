@@ -23,8 +23,9 @@ const campgroundRoutes = require('./routes/campgrounds')
 const reviewRoutes = require('./routes/reviews')
 const MongoStore = require ("connect-mongo")
 
-// 'mongodb://127.0.0.1:27017/yelp-camp'
-const dbUrl = process.env.DB_URL
+
+
+const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/yelp-camp'
 mongoose.connect(dbUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -49,11 +50,13 @@ app.use(express.static(path.join(__dirname, 'public')))
 // serving static assets
 app.use(mongoSanitize());
 
+const secret = process.env.SECRET || 'thisshouldbeasecret'
+
 const store = MongoStore.create({
-    mongoUrl: 'mongodb://127.0.0.1:27017/yelp-camp',
+    mongoUrl: dbUrl,
     touchAfter: 24 * 60 * 60,
     crypto: {
-        secret: 'this should be a secret'
+        secret
     }
 });
 
@@ -62,7 +65,7 @@ console.log("SESSION STORE ERROR", e)})
 
 const sessionConfig = {
     store,
-    secret: 'this should be a secret',
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -159,6 +162,7 @@ app.use((err, req, res, next) => {
 
 })
 
+
 app.listen(3000, () => {
-    console.log('serving on port 3000')
+    console.log("serving on port 3000")
 })
